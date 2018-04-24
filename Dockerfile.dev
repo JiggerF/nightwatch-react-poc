@@ -1,0 +1,11 @@
+FROM node:8
+
+RUN mkdir /work
+WORKDIR /work
+
+COPY ./package.json ./
+COPY ./yarn.lock ./
+
+RUN yarn install
+
+VOLUME /work/node_modules
