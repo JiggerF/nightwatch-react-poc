@@ -3,7 +3,7 @@ import {Product} from '../'
 
 const ProductList = ({products, compare}) =>
   <div>
-    <div className="row mt-3">
+    <div className="row mt-3" id="product-list">
         {products.map(product =>
           <Product key={product.id} product={product} compare={compare} />
         )}

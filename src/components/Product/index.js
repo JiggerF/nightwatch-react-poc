@@ -2,7 +2,7 @@ import React from 'react'
 import './styles.css'
 
 const Product = ({product, compare}) =>
-    <div key={product.id} className="col-sm-6 col-md-3">
+    <div key={product.id} className="col-sm-6 col-md-3" id={"product-" + product.id}>
         <div className={"product " + (product.compare ? "compare" : "")} >
             <img src={product.image} alt={product.name} />
             <div className="image_overlay"></div>

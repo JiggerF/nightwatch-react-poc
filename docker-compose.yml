@@ -26,6 +26,7 @@ services:
     working_dir: /work
     environment:
       SELENIUM_HOST: selenium-browser
+      TEST_APP:
     ports:
       - "9000:9000"
     depends_on:

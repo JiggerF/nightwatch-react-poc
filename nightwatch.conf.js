@@ -1,120 +1,71 @@
-require('env2')('.env'); // optionally store your environment variables in .env
-const seleniumServer = require("selenium-server");
-const chromedriver = require("chromedriver");
-const PKG = require('./package.json'); // so we can get the version of the project
-const SCREENSHOT_PATH = "./node_modules/nightwatch/screenshots/" + PKG.version + "/";
+const TEST_REPORT_PATH = './test/reports';
+const SELENIUM_HOST = process.env.SELENIUM_HOST || "127.0.0.1";
+const SELENIUM_PORT = process.env.SELENIUM_PORT || "4444";
+const PAGE_OBJECT_PATH = './test/pages';
+const BINPATH = './node_modules/nightwatch/bin/';
+const SCREENSHOT_PATH = "./test/screenshots/"
 
 const config = { // we use a nightwatch.conf.js file so we can include comments and helper functions
-  "src_folders": [
-    "test/e2e"     // we use '/test' as the name of our test directory by default. So 'test/e2e' for 'e2e'.
+  src_folders: [
+    "test/component"     // we use '/test' as the name of our test directory by default. So 'test/e2e' for 'e2e'.
   ],
-  "output_folder": "./node_modules/nightwatch/reports", // reports (test outcome) output by Nightwatch
-  "selenium": {
-    "start_process": true,
-    "server_path": seleniumServer.path,
-    "log_path": "",
-    "host": "127.0.0.1",
-    "port": 4444,
-    "cli_args": {
-      "webdriver.chrome.driver" : chromedriver.path
-    }
-  },
-  "test_workers" : {"enabled" : true, "workers" : "auto"}, // perform tests in parallel where possible
-  "test_settings": {
-    "default": {
-      "launch_url": "http://localhost", // we're testing a Public or "staging" site on Saucelabs
-      "selenium_port": 80,
-      "selenium_host": "ondemand.saucelabs.com",
-      "silent": true,
-      "screenshots": {
-        "enabled": true, // save screenshots to this directory (excluded by .gitignore)
-        "path": SCREENSHOT_PATH
+  output_folder: TEST_REPORT_PATH, // reports (test outcome) output by Nightwatch
+  page_objects_path: PAGE_OBJECT_PATH,
+  test_workers : {
+    "enabled" : true,
+    "workers" : "auto",
+  },// perform tests in parallel where possible
+  globals_path: "nightwatch.globals.js",
+  test_settings: {
+    default: {
+      selenium_port: SELENIUM_PORT,
+      selenium_host: SELENIUM_HOST,
+      silent: true,
+      screenshots: {
+        enabled: true, // save screenshots to this directory (excluded by .gitignore)
+        on_failure: true,
+        on_error: true,
+        path: SCREENSHOT_PATH,
       },
-      "username" : "${SAUCE_USERNAME}",     // if you want to use Saucelabs remember to
-      "access_key" : "${SAUCE_ACCESS_KEY}", // export your environment variables (see readme)
-      "globals": {
-        "waitForConditionTimeout": 10000    // wait for content on the page before continuing
-      }
-    },
-    "local": {
-      "launch_url": "http://localhost",
-      "selenium_port": 4444,
-      "selenium_host": "127.0.0.1",
-      "silent": true,
-      "screenshots": {
-        "enabled": true, // save screenshots taken here
-        "path": SCREENSHOT_PATH
-      }, // this allows us to control the
-      "globals": {
-        "waitForConditionTimeout": 15000 // on localhost sometimes internet is slow so wait...
+      globals: {
+        waitForConditionTimeout: 10000  ,  // wait for content on the page before continuing
       },
-      "desiredCapabilities": {
-        "browserName": "chrome",
-        "chromeOptions": {
-          "args": [
+      desiredCapabilities: {
+        browserName: "chrome",
+        chromeOptions: {
+          args: [
             `Mozilla/5.0 (iPhone; CPU iPhone OS 5_0 like Mac OS X) AppleWebKit/534.46
             (KHTML, like Gecko) Version/5.1 Mobile/9A334 Safari/7534.48.3`,
-            "--window-size=640,1136" // iphone 5
-          ]
+          ],
+          // disable image rendering for a faster smoke test
+          prefs: {
+            profile: {
+              default_content_settings_values: {
+                images: 2,
+              },
+            },
+          },
         },
-        "javascriptEnabled": true,
-        "acceptSslCerts": true
-      }
+        javascriptEnabled: true,
+        acceptSslCerts: true,
+      },
     },
-    "chrome": { // your local Chrome browser (chromedriver)
-      "desiredCapabilities": {
-        "browserName": "chrome",
-        "javascriptEnabled": true,
-        "acceptSslCerts": true
-      }
+  },
+};
+
+if (!process.env.SELENIUM_HOST) {
+  config["selenium"] = {
+    start_process: true,
+    server_path: BINPATH + "selenium.jar",
+    log_path: "",
+    host: SELENIUM_HOST,
+    port: SELENIUM_PORT,
+    cli_args: {
+      "webdriver.chrome.driver": BINPATH + "chromedriver",
     },
-    "chromemac": { // browsers used on saucelabs:
-      "desiredCapabilities": {
-        "browserName": "chrome",
-        "platform": "OS X 10.11",
-        "version": "47"
-      }
-    },
-    "ie11": {
-      "desiredCapabilities": {
-        "browserName": "internet explorer",
-        "platform": "Windows 10",
-        "version": "11.0"
-      }
-    },
-    "firefox" : {
-      "desiredCapabilities": {
-        "platform": "XP",
-        "browserName": "firefox",
-        "version": "33"
-      }
-    },
-    "internet_explorer_10" : {
-      "desiredCapabilities": {
-        "platform": "Windows 7",
-        "browserName": "internet explorer",
-        "version": "10"
-      }
-    },
-    "android_s4_emulator": {
-      "desiredCapabilities": {
-        "browserName": "android",
-        "deviceOrientation": "portrait",
-        "deviceName": "Samsung Galaxy S4 Emulator",
-        "version": "4.4"
-      }
-    },
-    "iphone_6_simulator": {
-      "desiredCapabilities": {
-        "browserName": "iPhone",
-        "deviceOrientation": "portrait",
-        "deviceName": "iPhone 6",
-        "platform": "OSX 10.10",
-        "version": "8.4"
-      }
-    }
-  }
+  };
 }
+
 module.exports = config;
 
 function padLeft (count) { // theregister.co.uk/2016/03/23/npm_left_pad_chaos/

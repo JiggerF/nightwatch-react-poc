@@ -4,6 +4,8 @@ cd $(dirname $0)/..
 
 trap "docker-compose down --volume" 0
 
+export TEST_APP='http://appinstance.test:3000/'
+
 docker-compose build
 docker-compose run dev npm run build
 docker-compose run --service-ports tester "${@-bash}"
