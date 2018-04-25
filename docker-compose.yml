@@ -8,9 +8,33 @@ services:
     command:
       - npm
       - run
-      - start
+      - start-js
     volumes:
       - .:/work
     working_dir: /work
     ports:
       - "3000:3000"
+
+  tester:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    command:
+      - bash
+    volumes:
+      - .:/work
+    working_dir: /work
+    environment:
+      SELENIUM_HOST: selenium-browser
+    ports:
+      - "9000:9000"
+    depends_on:
+      - selenium-browser
+
+  selenium-browser:
+    image: selenium/standalone-chrome-debug
+    ports:
+      - "4444:4444"
+      - "5901:5900"
+    links:
+      - dev:appinstance.test
